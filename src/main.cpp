@@ -1,29 +1,60 @@
+//Tomasz Dakowicz 261438
+
 #include <iostream>
 #include <cstdio>
-#include "Node.hpp"
 #include "Tree.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-	int n, a, b;
+	if(argc == 2)
+		printf("2\n");
+	if(argc == 3)
+		printf("3\n");
+
+	return 0;
+}
+
+void input_method()
+{
+	int s, d;
+	int nodesAmount, availablePaths;
+	int algorithm;
 	Tree tree;
 
-	std::cin >> n;
+	std::cout << "Zadanie: T2 - Mrowki\n";
+	std::cout << "Wybierz algorytm: \n";
+	std::cout << "1. Rozwiazanie brutalne\n";
+	std::cout << "2. Rozwiazanie ze srednica grafu\n";
 
-	while( n > 1)
+	std::cin >> algorithm;
+
+	std::cout << "Podaj liczbe mrowisk:\n";
+	std::cin >> nodesAmount;
+
+	std::cout << "Podaj liczbe N mozliwych sciezek:\n";
+	std::cin >> availablePaths;
+
+	std::cout << "Wypisz wszystkie polaczenia miedzy mrowiskami:\n";
+	int n = nodesAmount;
+	while(n > 1)
 	{
-		std::cin >> a >> b;
+		std::cin >> s >> d;
 
-		Node* source = tree.getNode(a);
-		Node* dest = tree.getNode(b);
+		Node* source = tree.getNode(s);
+		Node* dest = tree.getNode(d);
 
+		//add connections
 		source->addNode(dest);
 		dest->addNode(source);
-		// source->printNodes();
+
 		n--;
 	}
 
-	tree.BFS();
+	std::cout << "Otrzymane sciezki:\n";
 
-	return 0;
+	tree.processCoverage(availablePaths, algorithm);
+
+	int coverage = tree.getCoverage();
+
+	std::cout << "Otrzymane pokrycie grafu: "<< coverage << "/" << nodesAmount <<"\n";
 }

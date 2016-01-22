@@ -1,3 +1,5 @@
+//Tomasz Dakowicz 261438
+
 #include <vector>
 
 class Node
@@ -5,48 +7,17 @@ class Node
 private: 
 	std::vector<Node*> v;
 	int ID;
+	bool marked;
 
 public:
-	Node(int ID)
-	{
-		this->ID = ID;
-	}
-	
-	~Node()
-	{
-		this->v.clear();
-	}
+	Node(int ID);
+	~Node();
 
-	int getID()
-	{
-		return this->ID;
-	}
-
-	void addNode(Node* node)
-	{
-		if(node != NULL && this != node)
-		{
-			for(Node* n : this->v)
-			{
-				if(n == node)
-					return;
-			}
-			this->v.push_back(node);
-		}
-	}
-
-	void printNodes()
-	{
-		for(Node* node : this->v)
-		{
-			std::cout << node->getID() << " ";
-		}
-		std::cout << "\n";
-	}
-
-	std::vector<Node*>& getNeighbours()
-	{
-		return this->v;
-	}
-
+	int getID();
+	bool isMarked();
+	void setMarked(bool val);
+	void addNode(Node* node);
+	void printNodes();
+	std::vector<Node*>& getNeighbours();
+	int getNeighboursAmount();
 };

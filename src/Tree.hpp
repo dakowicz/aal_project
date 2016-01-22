@@ -1,57 +1,33 @@
+//Tomasz Dakowicz 261438
+
 #include <map>
 #include <queue>
+#include <iostream>
+#include "Node.hpp"
 
 class Tree
 {
 private:
 	std::map<int, Node*> mapOfNodes;
+	std::vector<Node*> leafs;
 
 public:
 
-	Tree(){}
+	static const int BRUTAL_METHOD = 1;
+	static const int DIAMETER_METHOD = 2;
 
-	~Tree()
-	{
-		this->mapOfNodes.clear();
-	}
+	Tree();
+	~Tree();
 
-	Node* getNode(int ID)
-	{
-		if(mapOfNodes[ID] == NULL)
-			mapOfNodes[ID] = new Node(ID);
-
-		return mapOfNodes[ID];
-	}
-
-	void BFS()
-	{
-		std::queue<Node*> q;
-		std::map<Node*, bool> visited;
-
-		for(auto& root : mapOfNodes)
-		{
-			if(visited[root.second] == false)
-			{
-				q.push(root.second);
-				visited[root.second] = true;
-
-				while(!q.empty())
-				{
-					Node* temp = q.front();
-					q.pop();
-					std::cout << temp->getID() << std::endl;
-
-					for(Node* node : temp->getNeighbours())
-					{
-						if(visited[node] == false)
-						{
-							q.push(node);
-							visited[node] = true; 
-						}
-					}
-
-				}
-			}
-		}
-	}
+	Node* getNode(int ID);
+	void findLeafs();
+	Node* BFSFarthestNodeWithTracking(Node* begin, std::vector<Node*>& v);
+	Node* BFSFarthestNode(Node* begin);
+	void processCoverage(int& availablePaths, int& algorithm);
+	void diameter_method(int& availablePaths);
+	void brutal_method(int& availablePaths);
+	void BFSGetAllPaths(Node* begin, std::vector< std::vector< Node* > >& vectorOfTracks);
+	void printTheWholePath(std::vector<Node*>& v);
+	void setMarkedForAll(std::vector<Node*>& v);
+	int getCoverage();
 };
