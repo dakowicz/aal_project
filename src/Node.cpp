@@ -1,6 +1,13 @@
+//Tomasz Dakowicz 261438
+
 #include <iostream>
 #include <cstdio>
 #include "Node.hpp"
+
+Node::Node(int ID)
+{
+	this->ID = ID;
+}
 
 Node::~Node()
 {

@@ -1,3 +1,5 @@
+//Tomasz Dakowicz 261438
+
 #include "Tree.hpp"
 
 Tree::Tree(){}
@@ -20,7 +22,7 @@ void Tree::findLeafs()
 {
 	for(auto& node : mapOfNodes)
 	{
-		//leaf of the three
+		//leaf of the tree
 		if(node.second->getNeighboursAmount() == 1)
 			this->leafs.push_back(node.second);
 	}

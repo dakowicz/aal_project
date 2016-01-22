@@ -1,15 +1,41 @@
 //Tomasz Dakowicz 261438
 
 #include <iostream>
-#include <cstdio>
+#include <stdio.h>
+#include <string.h>
+
 #include "Tree.hpp"
+#include "RandomGenerator.hpp"
+
+static const char* INPUT = "--input";
+static const char* RANDOM = "--random";
+static const char* COMPLEX = "--complex";
+
+
+//function responsible for manual input mode
+void input_method();
+//function responsible for random input data generation mode
+void random_method();
+//function responsible for custom settings mode
+void complex_method();
+//command was not recognized
+void wrong_command();
+
+
 
 int main(int argc, char** argv)
 {
 	if(argc == 2)
-		printf("2\n");
-	if(argc == 3)
-		printf("3\n");
+	{
+		if(strcmp(argv[1], INPUT) == 0)
+			input_method();
+		else if(strcmp(argv[1], RANDOM) == 0)
+			random_method();
+		else if(strcmp(argv[1], COMPLEX) == 0)
+			complex_method();
+		else
+			wrong_command();
+	}
 
 	return 0;
 }
@@ -39,14 +65,11 @@ void input_method()
 	while(n > 1)
 	{
 		std::cin >> s >> d;
-
 		Node* source = tree.getNode(s);
 		Node* dest = tree.getNode(d);
-
 		//add connections
 		source->addNode(dest);
 		dest->addNode(source);
-
 		n--;
 	}
 
@@ -57,4 +80,22 @@ void input_method()
 	int coverage = tree.getCoverage();
 
 	std::cout << "Otrzymane pokrycie grafu: "<< coverage << "/" << nodesAmount <<"\n";
+}
+
+void random_method()
+{
+	RandomGenerator generator;
+	generator.generate();
+}
+
+void complex_method()
+{
+
+}
+
+
+void wrong_command()
+{
+	std::cout << "Wprowadzono bledny tryb programu\n";
+	std::cout << "Zamknieto dzialanie aplikacji\n";
 }
