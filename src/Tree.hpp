@@ -21,13 +21,16 @@ public:
 
 	Node* getNode(int ID);
 	void findLeafs();
-	Node* BFSFarthestNodeWithTracking(Node* begin, std::vector<Node*>& v);
-	Node* BFSFarthestNode(Node* begin);
-	void processCoverage(int& availablePaths, int& algorithm);
-	void diameter_method(int& availablePaths);
-	void brutal_method(int& availablePaths);
+	void processCoverage(int availablePaths, int algorithm, bool display = true);
+	void diameter_method(int& availablePaths, bool display);
+	void brutal_method(int& availablePaths, bool display);
+	Node* BFSMostCoveredWithTracking(Node* begin, std::vector<Node*>& v);
+	Node* BFSMostCovered(Node* begin);
 	void BFSGetAllPaths(Node* begin, std::vector< std::vector< Node* > >& vectorOfTracks);
 	void printTheWholePath(std::vector<Node*>& v);
 	void setMarkedForAll(std::vector<Node*>& v);
+	void setMarkedEveryNode(bool val);
 	int getCoverage();
+	bool isThereThatID(int ID);
+	int getNumberOfLeafs();
 };

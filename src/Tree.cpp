@@ -28,10 +28,10 @@ void Tree::findLeafs()
 	}
 }
 
-Node* Tree::BFSFarthestNodeWithTracking(Node* begin, std::vector<Node*>& v)
+Node* Tree::BFSMostCoveredWithTracking(Node* begin, std::vector<Node*>& v)
 {
 	std::queue<Node*> q;
-	std::map<Node*, int> mapOfDistance;
+	std::map<Node*, int> mapOfCovered;
 	std::map<Node*, bool> mapOfVisitedState;
 	std::map<Node*, Node*> mapOfAncedents;
 	
@@ -39,7 +39,7 @@ Node* Tree::BFSFarthestNodeWithTracking(Node* begin, std::vector<Node*>& v)
 	Node* farthest = begin;
 
 	q.push(begin);
-	mapOfDistance[begin] = 0;
+	mapOfCovered[begin] = 1;
 	mapOfVisitedState[begin] = true;
 	mapOfAncedents[begin] = begin;
 
@@ -48,20 +48,18 @@ Node* Tree::BFSFarthestNodeWithTracking(Node* begin, std::vector<Node*>& v)
 		Node* parent = q.front();
 		q.pop();
 
-		// std::cout << parent->getID() << std::endl;
-
 		for(Node* node : parent->getNeighbours())
 		{
 			if(mapOfVisitedState[node] == false)
 			{
 				q.push(node);
 				mapOfVisitedState[node] = true;
-				mapOfDistance[node] = mapOfDistance[parent] + 1;
+				mapOfCovered[node] = mapOfCovered[parent] + (node->isMarked() ? 0 : 1);
 				mapOfAncedents[node] = parent;
 
-				//check if we found new farthest node
-				//farthest one -> its the node with currently highest distance && not marked
-				if(mapOfDistance[node] > mapOfDistance[farthest] && node->isMarked() == false)
+				//check if we found the new Most Covered Track
+				//represented by the node with currently highest coverage && not marked
+				if(mapOfCovered[node] > mapOfCovered[farthest] && node->isMarked() == false)
 					farthest = node;
 			}
 		}
@@ -81,17 +79,17 @@ Node* Tree::BFSFarthestNodeWithTracking(Node* begin, std::vector<Node*>& v)
 	return farthest;
 }
 
-Node* Tree::BFSFarthestNode(Node* begin)
+Node* Tree::BFSMostCovered(Node* begin)
 {
 	std::queue<Node*> q;
-	std::map<Node*, int> mapOfDistance;
+	std::map<Node*, int> mapOfCovered;
 	std::map<Node*, bool> mapOfVisitedState;
 	
 	//current farthest node - it's the starting node
 	Node* farthest = begin;
 
 	q.push(begin);
-	mapOfDistance[begin] = 0;
+	mapOfCovered[begin] = 1;
 	mapOfVisitedState[begin] = true;
 
 	while(!q.empty())
@@ -99,19 +97,17 @@ Node* Tree::BFSFarthestNode(Node* begin)
 		Node* parent = q.front();
 		q.pop();
 
-		// std::cout << parent->getID() << std::endl;
-
 		for(Node* node : parent->getNeighbours())
 		{
 			if(mapOfVisitedState[node] == false)
 			{
 				q.push(node);
 				mapOfVisitedState[node] = true;
-				mapOfDistance[node] = mapOfDistance[parent] + 1;
+				mapOfCovered[node] = mapOfCovered[parent] + (node->isMarked() ? 0 : 1);
 
-				//check if we found new farthest node
-				//farthest one -> its the node with currently highest distance && not marked
-				if(mapOfDistance[node] > mapOfDistance[farthest] && node->isMarked() == false)
+				//check if we found the new Most Covered Track
+				//represented by the node with currently highest coverage && not marked
+				if(mapOfCovered[node] > mapOfCovered[farthest] && node->isMarked() == false)
 					farthest = node;
 			}
 		}
@@ -121,15 +117,15 @@ Node* Tree::BFSFarthestNode(Node* begin)
 }
 
 
-void Tree::processCoverage(int& availablePaths, int& algorithm)
+void Tree::processCoverage(int availablePaths, int algorithm, bool display)
 {
 	if(algorithm == DIAMETER_METHOD)
-		diameter_method(availablePaths);
+		diameter_method(availablePaths, display);
 	else if(algorithm == BRUTAL_METHOD)
-		brutal_method(availablePaths);
+		brutal_method(availablePaths, display);
 }
 
-void Tree::diameter_method(int& availablePaths)
+void Tree::diameter_method(int& availablePaths, bool display)
 {
 	//find all leafs in the tree
 	findLeafs();
@@ -143,18 +139,19 @@ void Tree::diameter_method(int& availablePaths)
 		if(node->isMarked() == false)
 		{
 			//find current farthest node
-			Node* sourceNode = this->BFSFarthestNode(node);
+			Node* sourceNode = this->BFSMostCovered(node);
 
 			//find the diameter of the current tree
 			//and save the track into vector
 			std::vector<Node*> track;
-			Node* destinationNode = this->BFSFarthestNodeWithTracking(sourceNode, track);
+			Node* destinationNode = this->BFSMostCoveredWithTracking(sourceNode, track);
 
 			//set all nodes in the path as marked 
 			setMarkedForAll(track);
 
 			//print the track
-			printTheWholePath(track);
+			if(display)
+				printTheWholePath(track);
 
 			//the new path has been created
 			availablePaths--;
@@ -162,7 +159,7 @@ void Tree::diameter_method(int& availablePaths)
 	}
 }
 
-void Tree::brutal_method(int& availablePaths)
+void Tree::brutal_method(int& availablePaths, bool display)
 {
 	//find all leafs
 	findLeafs();
@@ -207,7 +204,8 @@ void Tree::brutal_method(int& availablePaths)
 		//apply the best track
 		setMarkedForAll(*maxCoverageTrack);
 		//print the best track
-		printTheWholePath(*maxCoverageTrack);
+		if(display)
+			printTheWholePath(*maxCoverageTrack);
 	}
 }
 
@@ -281,4 +279,23 @@ int Tree::getCoverage()
 			coverage++;
 
 	return coverage;
+}
+
+bool Tree::isThereThatID(int ID)
+{
+	if(mapOfNodes[ID] == NULL)
+		return false;
+	
+	return true;
+}
+
+void Tree::setMarkedEveryNode(bool val)
+{
+	for(auto& node : mapOfNodes)
+		node.second->setMarked(val);
+}
+
+int Tree::getNumberOfLeafs()
+{
+	return this->leafs.size();
 }

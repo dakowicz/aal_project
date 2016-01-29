@@ -3,9 +3,10 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "Tree.hpp"
-#include "RandomGenerator.hpp"
 
 static const char* INPUT = "--input";
 static const char* RANDOM = "--random";
@@ -13,13 +14,13 @@ static const char* COMPLEX = "--complex";
 
 
 //function responsible for manual input mode
-void input_method();
+void inputMethod();
 //function responsible for random input data generation mode
-void random_method();
+void randomMethod();
 //function responsible for custom settings mode
-void complex_method();
+void complexMethod();
 //command was not recognized
-void wrong_command();
+void wrongCommand();
 
 
 
@@ -28,22 +29,22 @@ int main(int argc, char** argv)
 	if(argc == 2)
 	{
 		if(strcmp(argv[1], INPUT) == 0)
-			input_method();
+			inputMethod();
 		else if(strcmp(argv[1], RANDOM) == 0)
-			random_method();
+			randomMethod();
 		else if(strcmp(argv[1], COMPLEX) == 0)
-			complex_method();
+			complexMethod();
 		else
-			wrong_command();
+			wrongCommand();
 	}
 
 	return 0;
 }
 
-void input_method()
+void inputMethod()
 {
 	int s, d;
-	int nodesAmount, availablePaths;
+	int numberOfNodes, availablePaths;
 	int algorithm;
 	Tree tree;
 
@@ -55,13 +56,13 @@ void input_method()
 	std::cin >> algorithm;
 
 	std::cout << "Podaj liczbe mrowisk:\n";
-	std::cin >> nodesAmount;
+	std::cin >> numberOfNodes;
 
-	std::cout << "Podaj liczbe N mozliwych sciezek:\n";
+	std::cout << "Podaj liczbe mozliwych sciezek:\n";
 	std::cin >> availablePaths;
 
 	std::cout << "Wypisz wszystkie polaczenia miedzy mrowiskami:\n";
-	int n = nodesAmount;
+	int n = numberOfNodes;
 	while(n > 1)
 	{
 		std::cin >> s >> d;
@@ -73,28 +74,167 @@ void input_method()
 		n--;
 	}
 
-	std::cout << "Otrzymane sciezki:\n";
+	std::cout << "\nOtrzymane sciezki:\n";
 
 	tree.processCoverage(availablePaths, algorithm);
 
 	int coverage = tree.getCoverage();
 
-	std::cout << "Otrzymane pokrycie grafu: "<< coverage << "/" << nodesAmount <<"\n";
+	std::cout << "\nOtrzymane pokrycie grafu: "<< coverage << "/" << numberOfNodes <<"\n";
+	std::cout << tree.getNumberOfLeafs();
 }
 
-void random_method()
+
+void generateConnections(Tree& tree, int n, bool display = true)
 {
-	RandomGenerator generator;
-	generator.generate();
+	int numberOfNodes = n;
+	int s, d;
+	while(n > 1)
+	{
+		//generating 
+		while( (s = rand() % (numberOfNodes) + 1) && tree.isThereThatID(s) == false);
+		Node* source = tree.getNode(s);
+
+		while( (d = rand() % (numberOfNodes) + 1) && tree.isThereThatID(d) == true);
+		Node* dest = tree.getNode(d);
+
+		if(display)
+			std::cout << s << " " << d << '\n';
+
+		source->addNode(dest);
+		dest->addNode(source);
+		n--;
+	}
 }
 
-void complex_method()
+void randomMethod()
 {
+	Tree tree;
+	srand (time(NULL));
 
+	std::cout << "Zadanie: T2 - Mrowki\n";
+
+	int numberOfNodes, paths;
+
+	std::cout << "Podaj liczbe mrowisk:\n";
+	std::cin >> numberOfNodes;
+
+	std::cout << "Podaj liczbe mozliwych sciezek:\n";
+	std::cin >> paths;
+
+	//add base node
+	tree.getNode(1);
+
+	std::cout << "Wygenerowano nastepujace polaczenia:\n";
+	generateConnections(tree, numberOfNodes);
+
+	//brutal method first
+	std::cout << "\nOtrzymane sciezki metoda brutalna:\n";
+
+	int method = Tree::BRUTAL_METHOD;
+	tree.processCoverage(paths, method);
+
+	int coverageBrutalMethod = tree.getCoverage();
+
+	std::cout << "\n";
+
+	//resetting the markers
+	tree.setMarkedEveryNode(false);
+
+	//time for optimized method
+	std::cout << "Otrzymane sciezki metoda optymalna:\n";
+
+	method = Tree::DIAMETER_METHOD;
+	tree.processCoverage(paths, method);
+
+	int coverageOptimizedMethod = tree.getCoverage();
+
+	std::cout << "\n";
+
+	//comparison between methods
+	std::cout << "Otrzymane pokrycie grafu metoda brutalna: "<< coverageBrutalMethod << "/" << numberOfNodes <<"\n";
+	std::cout << "Otrzymane pokrycie grafu metoda optymalna: "<< coverageOptimizedMethod << "/" << numberOfNodes <<"\n";
+}
+
+void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vector<int>& numberOfLeafs, std::vector<clock_t>& executionTimeBrutal, std::vector<clock_t>& executionTimeOptimized)
+{
+	Tree tree;
+	int n, p;
+	clock_t beginTime;
+
+	std::cout << "Podaj liczbe mrowisk:\n";
+	std::cin >> n;
+
+	std::cout << "Podaj liczbe mozliwych sciezek:\n";
+	std::cin >> p;
+
+	numberOfNodess.push_back(n);
+	paths.push_back(p);
+
+	//add base node
+	tree.getNode(1);
+
+	//add connections
+	int numberOfNodes = n;
+	int s, d;
+	while(n > 1)
+	{
+		//generating 
+		while( (s = rand() % (numberOfNodes) + 1) && tree.isThereThatID(s) == false);
+		Node* source = tree.getNode(s);
+
+		while( (d = rand() % (numberOfNodes) + 1) && tree.isThereThatID(d) == true);
+		Node* dest = tree.getNode(d);
+
+		source->addNode(dest);
+		dest->addNode(source);
+		n--;
+	}
+
+	//get execution time for brutal method
+	beginTime = clock();
+
+	tree.processCoverage(p, Tree::BRUTAL_METHOD, false);
+	executionTimeBrutal.push_back(clock() - beginTime);
+
+	tree.setMarkedEveryNode(false);
+	//get execution time for optimized method
+
+	beginTime = clock();
+
+	tree.processCoverage(p, Tree::DIAMETER_METHOD, false);
+	executionTimeOptimized.push_back(clock() - beginTime);
+
+	numberOfLeafs.push_back(tree.getNumberOfLeafs());
+	std::cout << "Zakonczono obliczenia podanego testu\n\n";
+}
+
+void complexMethod()
+{
+	srand (time(NULL));
+
+	std::cout << "Zadanie: T2 - Mrowki\n";
+
+	int tests;
+	std::vector<int> numberOfNodes, paths, numberOfLeafs;
+	std::vector<clock_t> executionTimeBrutal, executionTimeOptimized;
+
+	std::cout << "Podaj liczbe zestawow danych:\n";
+	std::cin >> tests;
+
+	for (int i = 0; i < tests; ++i)
+	{
+		runTest(numberOfNodes, paths, numberOfLeafs, executionTimeBrutal, executionTimeOptimized);
+	}
+
+	for (int i = 0; i < tests; ++i)
+	{
+		std::cout << numberOfNodes[i] << "\t" << paths[i] << "\t" << numberOfLeafs[i] << "\t" << executionTimeBrutal[i] << "\t" << executionTimeOptimized[i] << "\n"; 
+	}
 }
 
 
-void wrong_command()
+void wrongCommand()
 {
 	std::cout << "Wprowadzono bledny tryb programu\n";
 	std::cout << "Zamknieto dzialanie aplikacji\n";
