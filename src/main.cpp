@@ -173,13 +173,10 @@ void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vec
 	clock_t beginTime;
 
 	std::cout << "Podaj liczbe mrowisk:\n";
-	//std::cin >> n;
+	std::cin >> n;
 
 	std::cout << "Podaj liczbe mozliwych sciezek:\n";
-	//std::cin >> p;
-
-	//WYWALIC
-	n = 1000; p = 40;
+	std::cin >> p;
 
 	numberOfNodess.push_back(n);
 	paths.push_back(p);
@@ -235,21 +232,6 @@ void complexMethod()
 	{
 		std::cout << numberOfNodes[i] << "\t" << paths[i] << "\t" << numberOfLeafs[i] << "\t" << executionTimeBrutal[i] << "\t" << executionTimeOptimized[i] << "\n"; 
 	}
-
-	//WYWALIC
-	double resBrutal = 0;
-	for (double res : executionTimeBrutal)
-		resBrutal += res;
-
-	resBrutal /= executionTimeBrutal.size();
-
-	double resOpt = 0;
-	for (double res : executionTimeOptimized)
-		resOpt += res;
-
-	resOpt /= executionTimeOptimized.size();
-
-	std::cout << resBrutal <<" " <<resOpt << "\n";
 }
 
 void wrongCommand()

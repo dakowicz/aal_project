@@ -161,7 +161,7 @@ void Tree::brutal_method(int& availablePaths, bool display)
 	//vector of vectors for all paths between leafs
 	std::vector< std::vector<Node*> > tracks;
 
-	//review all the leafs
+	//review all leafs
 	for(Node* node : this->leafs)
 	{
 		//find ways for every other leaf
