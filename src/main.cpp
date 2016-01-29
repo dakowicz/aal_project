@@ -188,10 +188,10 @@ void runTest(std::vector<int>& numberOfNodes, std::vector<int>& paths, std::vect
 	beginTime = clock();
 
 	//execute
-	tree.processCoverage(P, method);
+	tree.processCoverage(P, method, false);
 	executionTime.push_back(convertToMilisecondsFromClocks(clock() - beginTime));
 
-	std::cout << "Zakonczono obliczenia testu\n\n";
+	std::cout << "Zakonczono obliczenia testu\n";
 }
 
 double calculateQ(int N, int P, int L, double executionTime, int middleN, int middleP, int middleL, double middleTime, int method)
@@ -200,8 +200,8 @@ double calculateQ(int N, int P, int L, double executionTime, int middleN, int mi
 
 	if(method == Tree::BRUTAL_METHOD)
 	{
-		middleQuotient = ((middleL*middleL) * (middleP + 2*middleN)) / middleTime;
-		return (executionTime / (L*L) * (P + 2*N)) * middleQuotient; 
+		middleQuotient = ((middleL*middleL) * ( middleP + 2 * middleN)) / middleTime;
+		return (executionTime / ((L*L) * (P + 2 * N)) ) * middleQuotient;
 	}
 	if(method == Tree::DIAMETER_METHOD)
 	{
