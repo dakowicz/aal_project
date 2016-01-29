@@ -166,26 +166,19 @@ double convertToMilisecondsFromClocks(clock_t clocks)
 }
 
 
-void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vector<int>& numberOfLeafs, std::vector<double>& executionTimeBrutal, std::vector<double>& executionTimeOptimized)
+void runTest(std::vector<int>& numberOfNodes, std::vector<int>& paths, std::vector<int>& numberOfLeafs, std::vector<double>& executionTime, int N, int P, int method)
 {
 	Tree tree;
-	int n, p;
 	clock_t beginTime;
 
-	std::cout << "Podaj liczbe mrowisk:\n";
-	std::cin >> n;
-
-	std::cout << "Podaj liczbe mozliwych sciezek:\n";
-	std::cin >> p;
-
-	numberOfNodess.push_back(n);
-	paths.push_back(p);
+	numberOfNodes.push_back(N);
+	paths.push_back(P);
 
 	//add base node
 	tree.getNode(1);
 
 	//add connections
-	generateConnections(tree, n, false);
+	generateConnections(tree, N, false);
 	
 	//find leafs
 	tree.findLeafs();
@@ -194,43 +187,74 @@ void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vec
 	//get execution time for brutal method
 	beginTime = clock();
 
-	tree.processCoverage(p, Tree::BRUTAL_METHOD, false);
-	executionTimeBrutal.push_back(convertToMilisecondsFromClocks(clock() - beginTime));
+	//execute
+	tree.processCoverage(P, method);
+	executionTime.push_back(convertToMilisecondsFromClocks(clock() - beginTime));
 
-	tree.setMarkedEveryNode(false);
-	//get execution time for optimized method
-
-	beginTime = clock();
-
-	tree.processCoverage(p, Tree::DIAMETER_METHOD, false);
-	executionTimeOptimized.push_back(convertToMilisecondsFromClocks(clock() - beginTime));
-
-	std::cout << "Zakonczono obliczenia podanego testu\n\n";
+	std::cout << "Zakonczono obliczenia testu\n\n";
 }
+
+double calculateQ(int N, int P, int L, double executionTime, int middleN, int middleP, int middleL, double middleTime, int method)
+{
+	double middleQuotient;
+
+	if(method == Tree::BRUTAL_METHOD)
+	{
+		middleQuotient = ((middleL*middleL) * (middleP + 2*middleN)) / middleTime;
+		return (executionTime / (L*L) * (P + 2*N)) * middleQuotient; 
+	}
+	if(method == Tree::DIAMETER_METHOD)
+	{
+		middleQuotient = (4 * middleN * middleP) / middleTime;
+		return (executionTime / (4 * N * P)) * middleQuotient;
+	}
+} 
 
 void complexMethod()
 {
 	srand (time(NULL));
+	int method, N, P, diff;
+	double q;
 
 	std::cout << "Zadanie: T2 - Mrowki\n";
+	std::cout << "Wybierz algorytm: \n";
+	std::cout << "1. Rozwiazanie brutalne\n";
+	std::cout << "2. Rozwiazanie ze srednica grafu\n";
+
+	std::cin >> method;
+
+	std::cout << "Podaj startowe N:\n";
+	std::cin >> N;
+
+	std::cout << "Podaj tempo wzrosu N:\n";
+	std::cin >> diff;
+
+	std::cout << "Podaj stale P:\n";
+	std::cin >> P;
 
 	int tests;
-	std::vector<int> numberOfNodes, paths, numberOfLeafs;
-	std::vector<double> executionTimeBrutal, executionTimeOptimized;
+	std::vector<int> numberOfLeafs, numberOfNodes, paths;
+	std::vector<double> executionTime;
 
-	std::cout << "Podaj liczbe zestawow danych:\n";
-	std::cin >> tests;
-
-	for (int i = 0; i < tests; ++i)
+	//10 tests
+	for (int i = 0; i < 10; ++i)
 	{
-		runTest(numberOfNodes, paths, numberOfLeafs, executionTimeBrutal, executionTimeOptimized);
+		runTest(numberOfNodes, paths, numberOfLeafs, executionTime, N, P, method);
+		N += diff;
 	}
 
+	//get middle result
+	int middleN = numberOfNodes[4];
+	int middleP = paths[4];
+	int middleL = numberOfLeafs[4];
+	double middleTime = executionTime[4];
+
 	std::cout << "Prezentacja pomiarow:\n";
-	std::cout << "N" << "\t" << "P" << "\t" << "L" << "\t" << "CZAS_B" << "\t" << "CZAS_O" << "\n";
-	for (int i = 0; i < tests; ++i)
+	std::cout << "N" << "\t" << "P" << "\t" << "L" << "\t" << "t[N,P]" << "\t" << "q[N,P]" << "\n";
+	for (int i = 0; i < 10; ++i)
 	{
-		std::cout << numberOfNodes[i] << "\t" << paths[i] << "\t" << numberOfLeafs[i] << "\t" << executionTimeBrutal[i] << "\t" << executionTimeOptimized[i] << "\n"; 
+		q = calculateQ(numberOfNodes[i], paths[i], numberOfLeafs[i], executionTime[i], middleN, middleP, middleL, middleTime, method);
+		std::cout << numberOfNodes[i] << "\t" << paths[i] << "\t" << numberOfLeafs[i] << "\t" << executionTime[i] << "\t" << q << "\n" ; 
 	}
 }
 
