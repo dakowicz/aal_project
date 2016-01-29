@@ -76,6 +76,7 @@ void inputMethod()
 
 	std::cout << "\nOtrzymane sciezki:\n";
 
+	tree.findLeafs();
 	tree.processCoverage(availablePaths, algorithm);
 
 	int coverage = tree.getCoverage();
@@ -91,16 +92,18 @@ void generateConnections(Tree& tree, int n, bool display = true)
 	int s, d;
 	while(n > 1)
 	{
-		//generating 
+		//find random existing node
 		while( (s = rand() % (numberOfNodes) + 1) && tree.isThereThatID(s) == false);
 		Node* source = tree.getNode(s);
 
+		//find random non-existing node
 		while( (d = rand() % (numberOfNodes) + 1) && tree.isThereThatID(d) == true);
 		Node* dest = tree.getNode(d);
 
 		if(display)
 			std::cout << s << " " << d << '\n';
 
+		//connect
 		source->addNode(dest);
 		dest->addNode(source);
 		n--;
@@ -127,6 +130,7 @@ void randomMethod()
 
 	std::cout << "Wygenerowano nastepujace polaczenia:\n";
 	generateConnections(tree, numberOfNodes);
+	tree.findLeafs();
 
 	//brutal method first
 	std::cout << "\nOtrzymane sciezki metoda brutalna:\n";
@@ -156,17 +160,26 @@ void randomMethod()
 	std::cout << "Otrzymane pokrycie grafu metoda optymalna: "<< coverageOptimizedMethod << "/" << numberOfNodes <<"\n";
 }
 
-void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vector<int>& numberOfLeafs, std::vector<clock_t>& executionTimeBrutal, std::vector<clock_t>& executionTimeOptimized)
+double convertToMilisecondsFromClocks(clock_t clocks)
+{
+    return static_cast < double >( clocks ) / (CLOCKS_PER_SEC / 1000);
+}
+
+
+void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vector<int>& numberOfLeafs, std::vector<double>& executionTimeBrutal, std::vector<double>& executionTimeOptimized)
 {
 	Tree tree;
 	int n, p;
 	clock_t beginTime;
 
 	std::cout << "Podaj liczbe mrowisk:\n";
-	std::cin >> n;
+	//std::cin >> n;
 
 	std::cout << "Podaj liczbe mozliwych sciezek:\n";
-	std::cin >> p;
+	//std::cin >> p;
+
+	//WYWALIC
+	n = 1000; p = 40;
 
 	numberOfNodess.push_back(n);
 	paths.push_back(p);
@@ -175,27 +188,17 @@ void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vec
 	tree.getNode(1);
 
 	//add connections
-	int numberOfNodes = n;
-	int s, d;
-	while(n > 1)
-	{
-		//generating 
-		while( (s = rand() % (numberOfNodes) + 1) && tree.isThereThatID(s) == false);
-		Node* source = tree.getNode(s);
-
-		while( (d = rand() % (numberOfNodes) + 1) && tree.isThereThatID(d) == true);
-		Node* dest = tree.getNode(d);
-
-		source->addNode(dest);
-		dest->addNode(source);
-		n--;
-	}
+	generateConnections(tree, n, false);
+	
+	//find leafs
+	tree.findLeafs();
+	numberOfLeafs.push_back(tree.getNumberOfLeafs());
 
 	//get execution time for brutal method
 	beginTime = clock();
 
 	tree.processCoverage(p, Tree::BRUTAL_METHOD, false);
-	executionTimeBrutal.push_back(clock() - beginTime);
+	executionTimeBrutal.push_back(convertToMilisecondsFromClocks(clock() - beginTime));
 
 	tree.setMarkedEveryNode(false);
 	//get execution time for optimized method
@@ -203,9 +206,8 @@ void runTest(std::vector<int>& numberOfNodess, std::vector<int>& paths, std::vec
 	beginTime = clock();
 
 	tree.processCoverage(p, Tree::DIAMETER_METHOD, false);
-	executionTimeOptimized.push_back(clock() - beginTime);
+	executionTimeOptimized.push_back(convertToMilisecondsFromClocks(clock() - beginTime));
 
-	numberOfLeafs.push_back(tree.getNumberOfLeafs());
 	std::cout << "Zakonczono obliczenia podanego testu\n\n";
 }
 
@@ -217,7 +219,7 @@ void complexMethod()
 
 	int tests;
 	std::vector<int> numberOfNodes, paths, numberOfLeafs;
-	std::vector<clock_t> executionTimeBrutal, executionTimeOptimized;
+	std::vector<double> executionTimeBrutal, executionTimeOptimized;
 
 	std::cout << "Podaj liczbe zestawow danych:\n";
 	std::cin >> tests;
@@ -227,12 +229,28 @@ void complexMethod()
 		runTest(numberOfNodes, paths, numberOfLeafs, executionTimeBrutal, executionTimeOptimized);
 	}
 
+	std::cout << "Prezentacja pomiarow:\n";
+	std::cout << "N" << "\t" << "P" << "\t" << "L" << "\t" << "CZAS_B" << "\t" << "CZAS_O" << "\n";
 	for (int i = 0; i < tests; ++i)
 	{
 		std::cout << numberOfNodes[i] << "\t" << paths[i] << "\t" << numberOfLeafs[i] << "\t" << executionTimeBrutal[i] << "\t" << executionTimeOptimized[i] << "\n"; 
 	}
-}
 
+	//WYWALIC
+	double resBrutal = 0;
+	for (double res : executionTimeBrutal)
+		resBrutal += res;
+
+	resBrutal /= executionTimeBrutal.size();
+
+	double resOpt = 0;
+	for (double res : executionTimeOptimized)
+		resOpt += res;
+
+	resOpt /= executionTimeOptimized.size();
+
+	std::cout << resBrutal <<" " <<resOpt << "\n";
+}
 
 void wrongCommand()
 {

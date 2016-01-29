@@ -127,9 +127,6 @@ void Tree::processCoverage(int availablePaths, int algorithm, bool display)
 
 void Tree::diameter_method(int& availablePaths, bool display)
 {
-	//find all leafs in the tree
-	findLeafs();
-
 	//start from first not marked leaf
 	for(Node* node : this->leafs)
 	{
@@ -161,9 +158,6 @@ void Tree::diameter_method(int& availablePaths, bool display)
 
 void Tree::brutal_method(int& availablePaths, bool display)
 {
-	//find all leafs
-	findLeafs();
-
 	//vector of vectors for all paths between leafs
 	std::vector< std::vector<Node*> > tracks;
 
